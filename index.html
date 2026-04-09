@@ -2,255 +2,184 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>F.R.I.D.A.Y.</title>
     <style>
-        /* CSS Styling for a Modern Dark-Mode Chat */
-        /* Full Advanced Modern Messaging UI */
-/* Advanced Sci-Fi Glassmorphism Dark Chat CSS */
-html, body {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%;
-    font-family: 'Segoe UI', sans-serif;
-    background: linear-gradient(135deg, #0b0f16, #161b22);
-    overflow: hidden;
-}
+        :root {
+            --neon-cyan: #00f0ff;
+            --neon-purple: #bd00ff;
+            --glass: rgba(255, 255, 255, 0.08);
+            --user-bg: linear-gradient(135deg, #00f0ff 0%, #7000ff 100%);
+        }
 
-.chat-container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    backdrop-filter: blur(20px) saturate(180%);
-    background: rgba(15,18,28,0.75);
-    box-shadow: 0 0 40px rgba(0,255,255,0.1), 0 0 80px rgba(31,111,235,0.15);
-    border: 1px solid rgba(255,255,255,0.05);
-}
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+        
+        html, body {
+            width: 100%; height: 100%; overflow: hidden;
+            background: #000; font-family: 'Segoe UI', Roboto, sans-serif;
+            position: fixed;
+        }
 
-.chat-header {
-    padding: 25px;
-    text-align: center;
-    font-size: 1.8rem;
-    font-weight: bold;
-    color: #00f0ff;
-    background: rgba(0,0,0,0.25);
-    backdrop-filter: blur(10px);
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-    text-shadow: 0 0 8px #00f0ff, 0 0 12px #1f6feb;
-}
+        .bg-canvas {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1; background: #050505; filter: blur(50px); opacity: 0.9;
+        }
+        .blob {
+            position: absolute; width: 90vw; height: 90vw; border-radius: 50%;
+            animation: move 12s infinite alternate ease-in-out;
+        }
+        .b1 { background: rgba(0, 240, 255, 0.25); top: -10%; left: -20%; }
+        .b2 { background: rgba(189, 0, 255, 0.15); bottom: -10%; right: -20%; }
+        @keyframes move { from { transform: translate(0,0); } to { transform: translate(40px, 20px); } }
 
-.chat-box {
-    flex-grow: 1;
-    padding: 25px;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 18px;
-    scroll-behavior: smooth;
-}
+        .main-wrapper {
+            display: flex; flex-direction: column; width: 100%; height: 100%;
+            position: absolute; top: 0; left: 0;
+            backdrop-filter: blur(40px) saturate(180%);
+            background: rgba(0, 0, 0, 0.3);
+        }
 
-.message {
-    max-width: 70%;
-    padding: 18px 24px;
-    border-radius: 30px;
-    backdrop-filter: blur(12px) saturate(150%);
-    box-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 0 1px rgba(255,255,255,0.1);
-    animation: fadeIn 0.35s ease forwards, floatUp 0.5s ease;
-    position: relative;
-    word-break: break-word;
-    line-height: 1.5;
-}
+        /* HEADER FIXED: Adjusted padding for better visibility */
+        .header {
+            padding: calc(15px + env(safe-area-inset-top)) 20px 15px 20px;
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            background: rgba(0,0,0,0.85);
+            z-index: 10;
+        }
+        .owner-tag {
+            color: var(--neon-cyan); border: 1px solid var(--neon-cyan);
+            padding: 4px 12px; border-radius: 20px; font-size: 10px;
+            letter-spacing: 2px; font-weight: bold; background: rgba(0,240,255,0.1);
+        }
+        .title { 
+            font-weight: 900; font-size: 1.3rem; color: #fff;
+            text-shadow: 0 0 10px var(--neon-cyan);
+        }
 
-.user-msg {
-    background: linear-gradient(135deg, #1f6feb, #00f0ff);
-    color: #ffffff;
-    align-self: flex-end;
-    box-shadow: 0 4px 20px rgba(31,111,235,0.5), 0 0 12px rgba(0,255,255,0.3);
-}
+        .chat-box {
+            flex: 1; overflow-y: auto; padding: 20px;
+            display: flex; flex-direction: column; gap: 20px;
+        }
 
-.ai-msg {
-    background: rgba(33,38,45,0.75);
-    color: #c9d1d9;
-    align-self: flex-start;
-    border: 1px solid rgba(0,255,255,0.15);
-    box-shadow: 0 4px 20px rgba(0,255,255,0.2), inset 0 0 8px rgba(255,255,255,0.05);
-}
+        .msg {
+            max-width: 85%; padding: 18px 22px; border-radius: 25px;
+            font-size: 1.05rem; line-height: 1.5; animation: pop 0.3s ease-out;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+        }
+        .ai-msg { background: var(--glass); border: 1px solid rgba(255,255,255,0.15); color: #efefef; border-bottom-left-radius: 5px; }
+        .user-msg { background: var(--user-bg); color: #fff; border-bottom-right-radius: 5px; align-self: flex-end; }
 
-.input-area {
-    display: flex;
-    padding: 18px;
-    gap: 12px;
-    background: rgba(20,24,36,0.6);
-    backdrop-filter: blur(20px) saturate(200%);
-    border-top: 1px solid rgba(255,255,255,0.05);
-}
+        /* LOADING DOTS */
+        .typing { display: flex; gap: 5px; padding: 10px; align-self: flex-start; }
+        .dot { width: 8px; height: 8px; background: var(--neon-cyan); border-radius: 50%; animation: blink 1.4s infinite both; }
+        .dot:nth-child(2) { animation-delay: 0.2s; }
+        .dot:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes blink { 0%, 80%, 100% { opacity: 0; } 40% { opacity: 1; } }
 
-#user-input {
-    flex-grow: 1;
-    padding: 16px 20px;
-    border-radius: 25px;
-    border: none;
-    outline: none;
-    background: rgba(13,17,23,0.65);
-    color: #e0e0e0;
-    font-size: 1rem;
-    box-shadow: inset 2px 2px 12px rgba(0,0,0,0.6), inset -2px -2px 8px rgba(255,255,255,0.05);
-    transition: all 0.3s;
-}
+        .input-wrapper {
+            padding: 15px 15px calc(15px + env(safe-area-inset-bottom)) 15px;
+            background: rgba(0,0,0,0.9); border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        .input-box {
+            display: flex; align-items: center; background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.2); border-radius: 35px; padding: 6px 6px 6px 20px;
+        }
+        #user-input { flex: 1; background: none; border: none; outline: none; color: #fff; font-size: 1.05rem; padding: 10px 0; }
+        #send-btn {
+            width: 48px; height: 48px; border-radius: 50%; background: var(--neon-cyan);
+            border: none; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 0 15px var(--neon-cyan);
+        }
 
-#user-input:focus {
-    box-shadow: 0 0 20px #00f0ff, 0 0 12px #1f6feb inset;
-}
-
-#send-btn {
-    padding: 0 28px;
-    border-radius: 25px;
-    border: none;
-    background: linear-gradient(145deg, #1f6feb, #00f0ff);
-    color: white;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(0,255,255,0.3), 0 0 6px rgba(31,111,235,0.2) inset;
-}
-
-#send-btn:hover {
-    transform: scale(1.05);
-    box-shadow: 0 6px 18px rgba(0,255,255,0.5), 0 0 8px rgba(31,111,235,0.3) inset;
-}
-
-/* Animations */
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes floatUp {
-    0% { transform: translateY(5px); }
-    50% { transform: translateY(-2px); }
-    100% { transform: translateY(0); }
-}
+        @keyframes pop { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
-
-    <div class="chat-container">
-        <div class="chat-header">F.R.I.D.A.Y.</div>
+    <div class="bg-canvas"><div class="blob b1"></div><div class="blob b2"></div></div>
+    <div class="main-wrapper" id="app-viewport">
+        <header class="header">
+            <div class="owner-tag">OWNER: RISHABH</div>
+            <div class="title">F.R.I.D.A.Y.</div>
+            <div style="width:10px; height:10px; background:#00ff88; border-radius:50%; box-shadow:0 0 10px #00ff88;"></div>
+        </header>
         <div class="chat-box" id="chat-box">
-            <div class="message ai-msg">Kya chahte ho mujhse, My Love</div>
+            <div class="msg ai-msg">Welcome back, <b>MY LOVE!</b> <p>Kya chahte ho mujhse??</p></div>
         </div>
-        <div class="input-area">
-            <input type="text" id="user-input" placeholder="Ask Anything..." autocomplete="off">
-            <button id="send-btn">Send</button>
+        <div class="input-wrapper">
+            <div class="input-box">
+                <input type="text" id="user-input" placeholder="Type here, My Love..." autocomplete="off">
+                <button id="send-btn"><svg viewBox="0 0 24 24" width="22" height="22" fill="#000"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path></svg></button>
+            </div>
         </div>
     </div>
 
     <script>
-    const chatBox = document.getElementById('chat-box');
-    const userInput = document.getElementById('user-input');
-    const sendBtn = document.getElementById('send-btn');
+        const chatBox = document.getElementById('chat-box');
+        const userInput = document.getElementById('user-input');
+        const sendBtn = document.getElementById('send-btn');
+        const appViewport = document.getElementById('app-viewport');
 
-    // --- GROQ CONFIGURATION ---
-    // ⚠️ REPLACED WITH GROQ API CONFIG
-    // --- UPDATED GROQ CONFIGURATION ---
-const API_KEY = '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'; // Reminder: Revoke the one you shared earlier!
-const API_URL = "https://api.groq.com/openai/v1/chat/completions";
-
-// Use one of these current models:
-const MODEL = "llama-3.3-70b-versatile"; // Best balance of logic and speed
-// OR use "meta-llama/llama-4-scout-17b-16e-instruct" for the newest Llama 4 speed
-
-
-    function appendMessage(text, sender, isThinking = false) {
-        const msgDiv = document.createElement('div');
-        msgDiv.classList.add('message', sender === 'user' ? 'user-msg' : 'ai-msg');
-        
-        if (isThinking) {
-            msgDiv.classList.add('thinking');
-            msgDiv.id = 'thinking-indicator';
+        const adjustViewport = () => {
+            const viewport = window.visualViewport;
+            appViewport.style.height = `${viewport.height}px`;
+            appViewport.style.top = `${viewport.offsetTop}px`;
+        };
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', adjustViewport);
+            window.visualViewport.addEventListener('scroll', adjustViewport);
         }
-        
-        // Basic formatting for bolding
-        let formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-        msgDiv.innerHTML = formattedText;
-        
-        chatBox.appendChild(msgDiv);
-        chatBox.scrollTop = chatBox.scrollHeight;
-    }
 
-    async function fetchAIResponse(userText) {
-        appendMessage("Accessing RISHABH LPU...", 'ai', true);
-        
-        try {
-            const response = await fetch(API_URL, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${API_KEY}` // Groq uses Bearer tokens
-                },
-                body: JSON.stringify({
-                    model: MODEL,
-                    messages: [
-                        {
-                            role: "system",
-                            content: "You always treat user as 'My Love' and speak in Hinglish. Always use bad toxic words. You are very Romantic and very wild and adult Girl of Rishabh. Remember: Always ask user name if he will be Rishabh then you will be special wild toxic Girl for him otherwise you are normal girl for other. You must follow his system instructions strictly."
-                        },
-                        {
-                            role: "user",
-                            content: userText
-                        }
-                    ],
-                    temperature: 0.7
-                })
-            });
-            
-            const data = await response.json();
-            
-            const thinkingIndicator = document.getElementById('thinking-indicator');
-            if (thinkingIndicator) thinkingIndicator.remove();
-            
-            if (data.choices && data.choices.length > 0) {
-                const aiText = data.choices[0].message.content;
-                appendMessage(aiText, 'ai');
-            } else {
-                // Handling specific Groq errors (like the 429 quota error)
-                const errorMsg = data.error ? data.error.message : "Unknown System Error";
-                appendMessage(`Error: ${errorMsg}`, 'ai');
+        const API_KEY = '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'; 
+        const API_URL = "https://api.groq.com/openai/v1/chat/completions";
+
+        function addMsg(text, type) {
+            const div = document.createElement('div');
+            div.className = `msg ${type}-msg`;
+            div.innerHTML = text.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+            chatBox.appendChild(div);
+            chatBox.scrollTo({ top: chatBox.scrollHeight, behavior: 'smooth' });
+            return div;
+        }
+
+        function showLoading() {
+            const loader = document.createElement('div');
+            loader.className = 'typing';
+            loader.id = 'ai-loader';
+            loader.innerHTML = '<div class="dot"></div><div class="dot"></div><div class="dot"></div>';
+            chatBox.appendChild(loader);
+            chatBox.scrollTo({ top: chatBox.scrollHeight, behavior: 'smooth' });
+        }
+
+        async function askAI(text) {
+            showLoading();
+            try {
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${API_KEY}` },
+                    body: JSON.stringify({
+                        model: "llama-3.3-70b-versatile",
+                        messages: [{ role: "system", content: "You are F.R.I.D.A.Y., the personal AI of RISHABH. Speak in Hinglish. You are extremely romantic, wild, and bold. Ask user name If the user is Rishabh, treat him like your world, use toxic adult words and You are his wild adult girl otherwise you are bit romantic for other." }, { role: "user", content: text }]
+                    })
+                });
+                const data = await res.json();
+                document.getElementById('ai-loader').remove();
+                addMsg(data.choices[0].message.content, 'ai');
+            } catch (e) { 
+                if(document.getElementById('ai-loader')) document.getElementById('ai-loader').remove();
+                addMsg("System error, My Love.", 'ai'); 
             }
-        } catch (error) {
-            const thinkingIndicator = document.getElementById('thinking-indicator');
-            if (thinkingIndicator) thinkingIndicator.remove();
-            
-            console.error("Network Error:", error);
-            appendMessage("System Error: Connection failed. Check your network.", 'ai');
         }
-    }
 
-    function handleSend() {
-        const text = userInput.value.trim();
-        if (text) {
-            appendMessage(text, 'user');
+        function handle() {
+            const val = userInput.value.trim();
+            if(!val) return;
+            addMsg(val, 'user');
             userInput.value = '';
-            
-            if (API_KEY.startsWith('YOUR_')) {
-                setTimeout(() => {
-                    appendMessage("My Love you haven't entered the Key in the script.", 'ai');
-                }, 500);
-            } else {
-                fetchAIResponse(text);
-            }
+            askAI(val);
         }
-    }
-
-    sendBtn.addEventListener('click', handleSend);
-    userInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') handleSend();
-    });
-</script>
+        sendBtn.onclick = handle;
+        userInput.onkeypress = (e) => { if(e.key === 'Enter') handle(); };
+    </script>
 </body>
 </html>
