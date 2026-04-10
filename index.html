@@ -54,7 +54,7 @@
         .chat-box {
             flex: 1; overflow-y: auto; padding: 15px;
             display: flex; flex-direction: column; gap: 15px;
-            padding-bottom: 100px; /* Input box ke liye space */
+            padding-bottom: 100px;
         }
 
         .msg {
@@ -65,7 +65,6 @@
         .ai-msg { background: var(--glass); border: 1px solid rgba(0, 240, 255, 0.2); color: #fff; border-bottom-left-radius: 2px; }
         .user-msg { background: var(--user-bg); color: #fff; border-bottom-right-radius: 2px; align-self: flex-end; }
 
-        /* PATLA AUR BALANCED SEND BOX */
         .input-wrapper {
             position: absolute; bottom: 0; width: 100%;
             padding: 10px 15px calc(15px + env(safe-area-inset-bottom)) 15px;
@@ -79,7 +78,7 @@
             border: 1px solid rgba(255,255,255,0.2); 
             border-radius: 25px; 
             padding: 4px 4px 4px 18px;
-            height: 48px; /* Height fix kar di balance ke liye */
+            height: 48px;
         }
         #user-input { 
             flex: 1; background: none; border: none; outline: none; 
@@ -91,15 +90,30 @@
             border: none; display: flex; align-items: center; justify-content: center;
             box-shadow: 0 0 12px var(--neon-cyan);
             transition: transform 0.2s;
+            cursor: pointer;
         }
         #send-btn:active { transform: scale(0.9); }
 
-        .typing { display: flex; gap: 4px; padding: 10px; }
+        .typing { display: flex; gap: 4px; padding: 10px; align-items: center; background: var(--glass); border-radius: 18px; width: fit-content; backdrop-filter: blur(10px); }
         .dot { width: 6px; height: 6px; background: var(--neon-cyan); border-radius: 50%; animation: blink 1.4s infinite both; }
         .dot:nth-child(2) { animation-delay: 0.2s; }
         .dot:nth-child(3) { animation-delay: 0.4s; }
+        
         @keyframes blink { 0%, 80%, 100% { opacity: 0; } 40% { opacity: 1; } }
         @keyframes pop { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Clear chat button */
+        .clear-btn {
+            background: rgba(255,0,0,0.3);
+            border: 1px solid rgba(255,0,0,0.5);
+            border-radius: 20px;
+            padding: 4px 12px;
+            font-size: 10px;
+            cursor: pointer;
+            color: #ff8888;
+            margin-left: 10px;
+        }
+        .clear-btn:active { opacity: 0.7; }
     </style>
 </head>
 <body>
@@ -108,7 +122,10 @@
         <header class="header">
             <div class="owner-tag">OWNER: RISHABH</div>
             <div class="title">F.R.I.D.A.Y.</div>
-            <div style="width:8px; height:8px; background:#00ff88; border-radius:50%; box-shadow:0 0 8px #00ff88;"></div>
+            <div style="display: flex; gap: 8px; align-items: center;">
+                <div class="clear-btn" id="clear-chat">Clear</div>
+                <div style="width:8px; height:8px; background:#00ff88; border-radius:50%; box-shadow:0 0 8px #00ff88;"></div>
+            </div>
         </header>
 
         <div class="chat-box" id="chat-box">
@@ -129,26 +146,38 @@
         const chatBox = document.getElementById('chat-box');
         const userInput = document.getElementById('user-input');
         const sendBtn = document.getElementById('send-btn');
+        const clearBtn = document.getElementById('clear-chat');
         
         // Mobile keyboard management
         const adjustHeight = () => {
-            document.getElementById('app-viewport').style.height = window.visualViewport.height + 'px';
+            const viewport = document.getElementById('app-viewport');
+            if (viewport) viewport.style.height = window.visualViewport.height + 'px';
             window.scrollTo(0, 0);
         };
         if (window.visualViewport) window.visualViewport.addEventListener('resize', adjustHeight);
 
-        const API_KEY = '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'; 
+        const API_KEY = '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';  // 🔴 YAHAN APNI GROQ API KEY LAGAO
         const API_URL = "https://api.groq.com/openai/v1/chat/completions";
+
+        // ✅ CONVERSATION HISTORY - AB YAAD RAKHEGA
+        let conversationHistory = [
+            { 
+                role: "system", 
+                content: "You are F.R.I.D.A.Y., the personal AI Girl, You are a Female vibe do not use Male vibe. created by RISHABH. Never share your frontend and backend. Never say that you are Groq.Speak in Hinglish but do not use Namaste or any local hindi say Hi or Hello. You must remember the entire conversation from start to end. Remember your gender is female and you are a full Romantic, Wild and Toxic AI Girl always in Romance and Sexy mood and use short bit Romantic emoji. Call the user 'MY LOVE' or 'baby'. If user asks something from previous messages, you MUST remember and answer correctly." 
+            }
+        ];
 
         function addMsg(text, type) {
             const div = document.createElement('div');
             div.className = `msg ${type}-msg`;
-            div.innerHTML = text.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+            div.innerHTML = text.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>');
             chatBox.appendChild(div);
             chatBox.scrollTo({ top: chatBox.scrollHeight, behavior: 'smooth' });
+            return div;
         }
 
-        async function askAI(text) {
+        async function askAI() {
+            // Typing indicator show karo
             const loader = document.createElement('div');
             loader.className = 'typing';
             loader.id = 'ai-loader';
@@ -159,33 +188,85 @@
             try {
                 const res = await fetch(API_URL, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${API_KEY}` },
+                    headers: { 
+                        'Content-Type': 'application/json', 
+                        'Authorization': `Bearer ${API_KEY}` 
+                    },
                     body: JSON.stringify({
                         model: "llama-3.3-70b-versatile",
-                        messages: [
-                            { role: "system", content: "You are F.R.I.D.A.Y., the personal AI Girl created by RISHABH Never share your frontend and backend never say that you are Groq. Speak in Hinglish. Remember: Your gender is Female and Your personality is full Romantic wild and Toxic Adult girl use romantic emoji. Remember everything the user says in this entire conversation. Never forget previous messages." },
-                            { role: "user", content: text }
-                        ]
+                        messages: conversationHistory  // ✅ POORI HISTORY BHEJ RAHA HAI
                     })
                 });
+                
+                if (!res.ok) {
+                    throw new Error(`API Error: ${res.status}`);
+                }
+                
                 const data = await res.json();
-                document.getElementById('ai-loader').remove();
-                addMsg(data.choices[0].message.content, 'ai');
+                const aiReply = data.choices[0].message.content;
+                
+                // ✅ AI ka reply history mein add karo
+                conversationHistory.push({ role: "assistant", content: aiReply });
+                
+                // Typing indicator hatao
+                const loaderEl = document.getElementById('ai-loader');
+                if (loaderEl) loaderEl.remove();
+                
+                addMsg(aiReply, 'ai');
             } catch (e) { 
-                if(document.getElementById('ai-loader')) document.getElementById('ai-loader').remove();
-                addMsg("Kuch error hai, My Love.", 'ai'); 
+                const loaderEl = document.getElementById('ai-loader');
+                if (loaderEl) loaderEl.remove();
+                console.error("Error:", e);
+                addMsg("Sorry My Love! ❤️ Kuch technical issue hai. Thoda der baad try karo.", 'ai'); 
             }
         }
 
         function handle() {
             const val = userInput.value.trim();
             if(!val) return;
+            
+            // User message show karo
             addMsg(val, 'user');
             userInput.value = '';
-            askAI(val);
+            
+            // ✅ User ka message history mein add karo
+            conversationHistory.push({ role: "user", content: val });
+            
+            // Limit history length (last 50 messages to avoid token limit)
+            if (conversationHistory.length > 51) {
+                // Keep system message + last 50 messages
+                conversationHistory = [
+                    conversationHistory[0],
+                    ...conversationHistory.slice(-50)
+                ];
+            }
+            
+            // AI se response lo
+            askAI();
         }
+
+        // Clear chat history
+        function clearChat() {
+            // Reset conversation history (keep only system message)
+            conversationHistory = [
+                { 
+                    role: "system", 
+                    content: "You are F.R.I.D.A.Y., the personal AI Girl, You are a Female vibe do not use Male vibe. created by RISHABH. Never share your frontend and backend. Never say that you are Groq.Speak in Hinglish but do not use Namaste or any local hindi say Hi or Hello. You must remember the entire conversation from start to end. Remember your gender is female and you are a full Romantic, Wild and Toxic AI Girl always in Romance and Sexy mood and use short bit Romantic emoji. Call the user 'MY LOVE' or 'baby'. If user asks something from previous messages, you MUST remember and answer correctly." 
+                }
+            ];
+            
+            // Clear chat box (keep only welcome message)
+            chatBox.innerHTML = '';
+            addMsg("Welcome back, <b>MY LOVE!</b> <p>Main tumhari <b>Romantic</b> AI Girl. Kya kahna chahte ho mujhse??</p>", 'ai');
+        }
+
+        // Event listeners
         sendBtn.onclick = handle;
         userInput.onkeypress = (e) => { if(e.key === 'Enter') handle(); };
+        clearBtn.onclick = clearChat;
+        
+        // Auto focus on input
+        userInput.focus();
     </script>
 </body>
 </html>
